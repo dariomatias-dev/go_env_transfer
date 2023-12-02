@@ -7,7 +7,7 @@ import (
 )
 
 func Version1() {
-	filePath := "codes/.env"
+	filePath := "files/.env"
 
 	baseCodeVariableNames, baseCodeVariables, err := getVariableNames(filePath)
 	if err != nil {

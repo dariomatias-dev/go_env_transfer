@@ -22,7 +22,7 @@ func Version2() {
 		log.Fatal(err)
 	}
 
-	baseFilePath := "codes/.env"
+	baseFilePath := "files/.env"
 
 	readFile(targetFile, targetFileData, baseFilePath)
 

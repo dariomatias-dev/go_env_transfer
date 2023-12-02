@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	baseFilePath := "codes/.env"
+	baseFilePath := "files/.env"
 	// Lê o código do arquivo base
 	baseFileData, err := os.ReadFile(baseFilePath)
 
