@@ -33,6 +33,7 @@ func Version3(targetFilePath string) {
 	targetFileData = bytes.TrimRight(targetFileData, "\n")
 
 	var variablesToAdd []byte
+	var variableNamesToAdd [][]byte
 
 	// Caracteres convertidos para byte
 	breakLine := []byte("\n")
@@ -42,7 +43,6 @@ func Version3(targetFilePath string) {
 	if len(targetFileData) == 0 {
 		variablesToAdd = append(variablesToAdd, baseFileData...)
 	} else {
-
 		baseFileVariables := bytes.Split(baseFileData, breakLine)
 		targetFileVariables := bytes.Split(targetFileData, breakLine)
 
@@ -74,12 +74,13 @@ func Version3(targetFilePath string) {
 
 				// Verifica se a variável do arquivo base é igual a variável atual do loop do arquivo alvo
 				if bytes.Equal(baseFileVariableName, targetFileVariableName) {
-					fmt.Printf("Variável %s já existe no arquivo .env\n", baseFileVariableName)
+					fmt.Printf("Variável %s já existe no arquivo .env.\n", baseFileVariableName)
 					break
 				}
 
 				// Adiciona a variável caso ela não exista no arquivo alvo
 				if targetFileVariableIndex == len(targetFileVariables)-1 {
+					variableNamesToAdd = append(variableNamesToAdd, baseFileVariableName)
 					variablesToAdd = append(variablesToAdd, breakLine...)
 					variablesToAdd = append(variablesToAdd, baseFileVariable...)
 				}
@@ -87,6 +88,7 @@ func Version3(targetFilePath string) {
 		}
 	}
 
+	// Caso não haja variáveis para adicionar, o programa é encerrado.
 	if len(variablesToAdd) == 0 {
 		return
 	}
@@ -101,5 +103,26 @@ func Version3(targetFilePath string) {
 	// Escreve no arquivo alvo
 	targetFile.Write(newCode)
 
-	fmt.Println("Acesse o arquivo .env e preencha as variáveis de ambiente")
+	// Caso o arquivo alvo esteja vazio, significa que todas as variáveis do arquivo base serão adicionadas
+	if len(variableNamesToAdd) == 0 {
+		fmt.Println("Acesse o arquivo .env e preencha a(s) variável(eis) de ambiente.")
+		return
+	}
+
+	// Variável responsável por informar quais variáveis de ambiente foram adicionadas
+	variableNames := string(variableNamesToAdd[0])
+
+	// Caso tenha sido adicionado mais de uma variável do arquivo base, a variável com os nomes das variáveis (variableNames) é atualizada
+	if len(variableNamesToAdd) > 1 {
+		for variableNameToAddIndex := 1; variableNameToAddIndex < len(variableNamesToAdd); variableNameToAddIndex++ {
+			if variableNameToAddIndex == len(variableNamesToAdd)-1 {
+				variableNames = fmt.Sprintf("%s e %s", string(variableNames), string(variableNamesToAdd[variableNameToAddIndex]))
+				break
+			}
+
+			variableNames = fmt.Sprintf("%s, %s", string(variableNames), string(variableNamesToAdd[variableNameToAddIndex]))
+		}
+	}
+
+	fmt.Printf("Acesse o arquivo .env e preencha a(s) variável(eis) de ambiente %s.\n", variableNames)
 }
