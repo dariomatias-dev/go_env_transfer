@@ -7,9 +7,7 @@ import (
 	"os"
 )
 
-func Version2() {
-	targetFilePath := ".env"
-
+func Version2(targetFilePath string) {
 	targetFile, err := os.OpenFile(targetFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {

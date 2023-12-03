@@ -1,4 +1,4 @@
-package main
+package versions
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main() {
+func Version3(targetFilePath string) {
 	baseFilePath := "files/.env"
 	// Lê o código do arquivo base
 	baseFileData, err := os.ReadFile(baseFilePath)
@@ -15,8 +15,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	targetFilePath := ".env"
 
 	// Abre ou cria o arquivo alvo
 	targetFile, err := os.OpenFile(targetFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
@@ -89,6 +87,10 @@ func main() {
 		}
 	}
 
+	if len(variablesToAdd) == 0 {
+		return
+	}
+
 	// Limpa o arquivo alvo.
 	targetFile.Truncate(0)
 
@@ -98,4 +100,6 @@ func main() {
 
 	// Escreve no arquivo alvo
 	targetFile.Write(newCode)
+
+	fmt.Println("Acesse o arquivo .env e preencha as variáveis de ambiente")
 }
