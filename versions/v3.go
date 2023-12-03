@@ -7,30 +7,30 @@ import (
 	"os"
 )
 
-func Version3(targetFilePath string) {
-	baseFilePath := "files/.env"
-	// Lê o código do arquivo base
-	baseFileData, err := os.ReadFile(baseFilePath)
+func Version3(destinationFilePath string) {
+	referenceFilePath := "files/.env"
+	// Lê o conteúdo do arquivo de referência
+	referenceFileData, err := os.ReadFile(referenceFilePath)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Abre ou cria o arquivo alvo
-	targetFile, err := os.OpenFile(targetFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	// Abre ou cria o arquivo de destino
+	destinationFile, err := os.OpenFile(destinationFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer targetFile.Close()
+	defer destinationFile.Close()
 
-	// Lê o código do arquivo alvo
-	targetFileData, err := os.ReadFile(targetFilePath)
+	// Lê o conteúdo do arquivo de destino
+	destinationFileData, err := os.ReadFile(destinationFilePath)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	targetFileData = bytes.TrimRight(targetFileData, "\n")
+	destinationFileData = bytes.Trim(destinationFileData, "\n")
 
 	var variablesToAdd []byte
 	var variableNamesToAdd [][]byte
@@ -39,50 +39,50 @@ func Version3(targetFilePath string) {
 	breakLine := []byte("\n")
 	emptySpace := []byte(" ")
 
-	// Caso o arquivo alvo esteja vazio, não é necessário fazer nenhuma vefiricação
-	if len(targetFileData) == 0 {
-		variablesToAdd = append(variablesToAdd, baseFileData...)
+	// Caso o arquivo de destino esteja vazio, não é necessário fazer nenhuma vefiricação
+	if len(destinationFileData) == 0 {
+		variablesToAdd = append(variablesToAdd, referenceFileData...)
 	} else {
-		baseFileVariables := bytes.Split(baseFileData, breakLine)
-		targetFileVariables := bytes.Split(targetFileData, breakLine)
+		referenceFileVariables := bytes.Split(referenceFileData, breakLine)
+		destinationFileVariables := bytes.Split(destinationFileData, breakLine)
 
-		// Cria um loop com base nas variáveis do arquivo base
-		for _, baseFileVariable := range baseFileVariables {
-			endVariableNameIndex := bytes.Index(baseFileVariable, emptySpace)
+		// Cria um loop com base nas variáveis do arquivo de referência
+		for _, referenceFileVariable := range referenceFileVariables {
+			endVariableNameIndex := bytes.Index(referenceFileVariable, emptySpace)
 			if endVariableNameIndex == -1 {
 				break
 			}
 
-			// Obtém o nome da variável de ambiente do arquivo base
-			baseFileVariableName := baseFileVariable[:endVariableNameIndex]
+			// Obtém o nome da variável de ambiente do arquivo de referência
+			referenceFileVariableName := referenceFileVariable[:endVariableNameIndex]
 
-			// Cria um loop com base nas variáveis do arquivo alvo
-			// Tem como finalidade verificar se a variável do arquivo base existe no arquivo alvo
-			for targetFileVariableIndex, targetFileVariable := range targetFileVariables {
+			// Cria um loop com base nas variáveis do arquivo de destino
+			// Tem como finalidade verificar se a variável do arquivo de referência existe no arquivo de destino
+			for destinationFileVariableIndex, destinationFileVariable := range destinationFileVariables {
 				// Caso a linha atual esteja vazia ou seja um comentário, o fluxo de execução passa para a linha seguinte
-				if len(targetFileVariable) == 0 || targetFileVariable[0] == '#' {
+				if len(destinationFileVariable) == 0 || destinationFileVariable[0] == '#' {
 					continue
 				}
 
-				endTargetNameIndex := bytes.Index(targetFileVariable, emptySpace)
+				endTargetNameIndex := bytes.Index(destinationFileVariable, emptySpace)
 				if endTargetNameIndex == -1 {
 					break
 				}
 
-				// Obtém o nome da variável de ambiente do arquivo alvo
-				targetFileVariableName := targetFileVariable[:endTargetNameIndex]
+				// Obtém o nome da variável de ambiente do arquivo de destino
+				destinationFileVariableName := destinationFileVariable[:endTargetNameIndex]
 
-				// Verifica se a variável do arquivo base é igual a variável atual do loop do arquivo alvo
-				if bytes.Equal(baseFileVariableName, targetFileVariableName) {
-					fmt.Printf("Variável %s já existe no arquivo .env.\n", baseFileVariableName)
+				// Verifica se a variável do arquivo de referência é igual a variável atual do loop do arquivo de destino
+				if bytes.Equal(referenceFileVariableName, destinationFileVariableName) {
+					fmt.Printf("Variável %s já existe no arquivo .env.\n", referenceFileVariableName)
 					break
 				}
 
-				// Adiciona a variável caso ela não exista no arquivo alvo
-				if targetFileVariableIndex == len(targetFileVariables)-1 {
-					variableNamesToAdd = append(variableNamesToAdd, baseFileVariableName)
+				// Adiciona a variável caso ela não exista no arquivo de destino
+				if destinationFileVariableIndex == len(destinationFileVariables)-1 {
+					variableNamesToAdd = append(variableNamesToAdd, referenceFileVariableName)
 					variablesToAdd = append(variablesToAdd, breakLine...)
-					variablesToAdd = append(variablesToAdd, baseFileVariable...)
+					variablesToAdd = append(variablesToAdd, referenceFileVariable...)
 				}
 			}
 		}
@@ -93,17 +93,17 @@ func Version3(targetFilePath string) {
 		return
 	}
 
-	// Limpa o arquivo alvo.
-	targetFile.Truncate(0)
+	// Limpa o arquivo de destino
+	destinationFile.Truncate(0)
 
-	// Uni o código do arquivo alvo com as variáveis que serão adicionadas
-	newCode := append(targetFileData, variablesToAdd...)
+	// Uni o código do arquivo de destino com as variáveis que serão adicionadas
+	newCode := append(destinationFileData, variablesToAdd...)
 	newCode = append(newCode, breakLine...)
 
-	// Escreve no arquivo alvo
-	targetFile.Write(newCode)
+	// Escreve no arquivo de destino
+	destinationFile.Write(newCode)
 
-	// Caso o arquivo alvo esteja vazio, significa que todas as variáveis do arquivo base serão adicionadas
+	// Caso o arquivo de destino esteja vazio, significa que todas as variáveis do arquivo de referência serão adicionadas
 	if len(variableNamesToAdd) == 0 {
 		fmt.Println("Acesse o arquivo .env e preencha a(s) variável(eis) de ambiente.")
 		return
@@ -112,7 +112,7 @@ func Version3(targetFilePath string) {
 	// Variável responsável por informar quais variáveis de ambiente foram adicionadas
 	variableNames := string(variableNamesToAdd[0])
 
-	// Caso tenha sido adicionado mais de uma variável do arquivo base, a variável com os nomes das variáveis (variableNames) é atualizada
+	// Caso tenha sido adicionado mais de uma variável do arquivo de referência, a variável variableNames é atualizada
 	if len(variableNamesToAdd) > 1 {
 		for variableNameToAddIndex := 1; variableNameToAddIndex < len(variableNamesToAdd); variableNameToAddIndex++ {
 			if variableNameToAddIndex == len(variableNamesToAdd)-1 {
